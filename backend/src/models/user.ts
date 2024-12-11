@@ -15,9 +15,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  isLibrarian: {
-    type: Boolean,
-    default: false,
+  role: {
+    type: String,
+    enum: ["student", "librarian", "admin"],
+    default: "student",
   },
   password: {
     required: true,

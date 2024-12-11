@@ -5,7 +5,7 @@ import { Input } from "./ui/input"
 import { z } from "zod"
 import { AuthformSchema } from "@/lib/utils"
 
-const formSchema = AuthformSchema
+const formSchema = AuthformSchema('sign-up')
 type Props={
    control:Control<z.infer<typeof formSchema>>
     name:FieldPath<z.infer<typeof formSchema>>,

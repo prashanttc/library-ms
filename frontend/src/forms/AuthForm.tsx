@@ -7,11 +7,14 @@ import CustomInput from "@/components/CustomInput"
 import { UseCreateUser } from "@/api/UserApi"
 import { Link, useNavigate } from "react-router-dom"
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner"
+import { useAuth } from "@/context/AuthContext"
 
 const AuthForm = ({ type }: { type: string }) => {
     const Navigate = useNavigate()
-    const { CreateUser , isLoading} = UseCreateUser()
-    const formSchema = AuthformSchema;
+    const { CreateUser, isLoading, isError } = UseCreateUser()
+    const { login ,isError:loginerror,isLoading:loginloading } = useAuth()
+    const formSchema = AuthformSchema(type);
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -22,11 +25,25 @@ const AuthForm = ({ type }: { type: string }) => {
         },
     })
 
-
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        CreateUser(values);
-        Navigate("/")
-    }
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        try {
+            if (type === 'sign-up') {
+                await CreateUser(values);
+                toast.success("user created successfully")
+                Navigate("/login");
+            }
+            else {
+                await login(values);
+                toast.success("login successfully")
+                Navigate("/")
+            }
+        } catch (error) {
+            if (isError || loginerror) {
+                toast.error("an error occured")
+            }
+            console.error("Sign-up failed:", error);
+        }
+    };
     return (
 
         <div className="h-[100vh] items-center flex justify-center px-5 lg:px-0">
@@ -62,25 +79,25 @@ const AuthForm = ({ type }: { type: string }) => {
                                         <CustomInput control={form.control} name="password" placeholder="***********" label="password" />
 
                                         <button className="mt-5 tracking-wide font-semibold bg-blue-900 text-gray-100 w-full py-4 rounded-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none" type="submit" disabled={isLoading}>
-                                           {isLoading?<Loader2 className="h-4 w-4 animate-spin"/>:
-                                           <>
-                                            {type === "sign-up" && <>
-                                                <svg
-                                                    className="w-6 h-6 -ml-2"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    stroke-width="2"
-                                                    strokeLinecap="round"
-                                                    stroke-linejoin="round"
-                                                >
-                                                    <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                                                    <circle cx="8.5" cy="7" r="4" />
-                                                    <path d="M20 8v6M23 11h-6" />
-                                                </svg>
-                                            </>}
-                                            <span className="ml-3">{type === "sign-in" ? "Login" : "Sign-up"}</span>
-                                           </>
-                                           }
+                                            {isLoading|| loginloading ? <Loader2 className="h-4 w-4 animate-spin" /> :
+                                                <>
+                                                    {type === "sign-up" && <>
+                                                        <svg
+                                                            className="w-6 h-6 -ml-2"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            stroke-width="2"
+                                                            strokeLinecap="round"
+                                                            stroke-linejoin="round"
+                                                        >
+                                                            <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                                                            <circle cx="8.5" cy="7" r="4" />
+                                                            <path d="M20 8v6M23 11h-6" />
+                                                        </svg>
+                                                    </>}
+                                                    <span className="ml-3">{type === "sign-in" ? "Login" : "Sign-up"}</span>
+                                                </>
+                                            }
                                         </button>
                                     </form>
                                 </Form>
